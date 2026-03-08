@@ -502,18 +502,99 @@ claude -p "你的任务" --model MiniMax-M2.5
 
 ## Spec-Kit 集成 (规范化开发流程)
 
-Spec-Kit 是一套规范化的开发流程命令，用于将需求完整转换为可交付代码。
+Spec-Kit 是 GitHub 推出的规范驱动开发工具包，将需求完整转换为可交付代码。
+
+### 安装 Spec-Kit
+
+```powershell
+# 使用 uv 安装 (推荐)
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+
+# 检查工具是否安装成功
+specify check
+```
+
+### 初始化项目
+
+```powershell
+# 创建新项目并指定 AI 助手 (Claude Code)
+specify init <项目名> --ai claude --script ps
+
+# 在当前目录初始化
+specify init . --ai claude --script ps
+
+# 强制覆盖已有目录
+specify init . --force --ai claude
+
+# 查看帮助
+specify --help
+```
 
 ### 指挥命令序列
 
 | 步骤 | 命令 | 产出 |
 |------|------|------|
-| **1** | `/speckit.specify [需求描述]` | spec.md（用户故事、验收标准） |
-| **2** | `/speckit.plan [分支名]` | plan.md、data-model.md |
-| **3** | `/speckit.tasks [分支名]` | tasks.md（任务清单） |
-| **4** | `/speckit.implement [分支名]` | 源代码实现 |
-| **5** | `/speckit.checklist [分支名] [清单名]` | 验收检查 |
-| **6** | `/speckit.analyze [分支名]` | 一致性分析 |
+| **1** | `/speckit.constitution` | 项目原则和开发指南 |
+| **2** | `/speckit.specify [需求描述]` | spec.md（用户故事、验收标准） |
+| **3** | `/speckit.plan` | plan.md、技术架构 |
+| **4** | `/speckit.tasks` | tasks.md（任务清单） |
+| **5** | `/speckit.implement` | 源代码实现 |
+| **6** | `/speckit.checklist` | 验收检查 |
+| **7** | `/speckit.analyze` | 一致性分析 |
+
+### 手动执行工作流（推荐）
+
+由于 Claude Code 交互式模式可能不稳定，建议手动执行：
+
+1. **创建项目原则** → 编辑 `.specify/memory/constitution.md`
+2. **创建功能规格** → 编辑 `.specify/memory/spec.md`
+3. **创建实现计划** → 编辑 `.specify/memory/plan.md`
+4. **创建任务清单** → 编辑 `.specify/memory/tasks.md`
+5. **实现代码** → 直接编写或使用 Claude Code
+
+### 完整案例：Todolist 应用开发
+
+```powershell
+# 1. 安装
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+
+# 2. 检查
+specify check
+
+# 3. 初始化项目
+specify init todolist --ai claude --script ps
+
+# 4. 进入项目目录
+cd todolist
+
+# 5. 手动创建规范文档
+# 5.1 创建 constitution.md (项目原则)
+# 5.2 创建 spec.md (用户场景、需求)
+# 5.3 创建 plan.md (技术方案)
+# 5.4 创建 tasks.md (任务列表)
+
+# 6. 实现代码
+# - index.html
+# - styles.css
+# - app.js
+```
+
+### 产出的项目结构
+
+```
+项目目录/
+├── index.html          # 页面
+├── styles.css          # 样式
+├── app.js              # 逻辑
+├── SPEC.md             # 规范摘要
+└── .specify/
+    ├── memory/
+    │   ├── constitution.md   # 项目宪法
+    │   ├── spec.md           # 功能规格
+    │   ├── plan.md          # 实现计划
+    │   └── tasks.md         # 任务清单
+    └── templates/            # 模板
+```
 
 ### 指挥话术示例
 
