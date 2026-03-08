@@ -243,13 +243,195 @@ claude --dir C:/project
 # 或: /simplify focus on memory efficiency
 ```
 
+## 安装和认证
+
+### 检查安装状态
+
+```powershell
+claude auth status
+```
+
+### 安装 Claude Code (Windows PowerShell)
+
+```powershell
+irm https://claude.ai/install.ps1 | iex
+```
+
+或使用 WinGet:
+
+```powershell
+winget install Anthropic.ClaudeCode
+```
+
+### 登录
+
+```powershell
+claude auth login --email user@example.com
+# 支持 SSO
+claude auth login --sso
+```
+
+---
+
+## 完整 CLI 参数参考
+
+| 参数 | 说明 | 示例 |
+|------|------|------|
+| `-p, --print` | 非交互式，打印结果后退出 | `claude -p "task"` |
+| `-c, --continue` | 继续最近会话 | `claude -c` |
+| `-r, --resume` | 恢复指定会话 | `claude -r session-name` |
+| `--model` | 指定模型 (sonnet/haiku/opus/MiniMax-M2.5) | `--model sonnet` |
+| `--max-turns` | 限制执行轮次 | `--max-turns 3` |
+| `--max-budget-usd` | 最大 API 花费 (print 模式) | `--max-budget-usd 5.00` |
+| `--dangerously-skip-permissions` | 跳过权限确认 (慎用) | |
+| `--output-format` | 输出格式 (text/json/stream-json) | `--output-format json` |
+| `--input-format` | 输入格式 | `--input-format stream-json` |
+| `--permission-mode` | 权限模式 (plan/auto/medium) | `--permission-mode plan` |
+| `--allowedTools` | 允许的工具 (逗号分隔) | `--allowedTools Read,Bash` |
+| `--disallowedTools` | 禁止的工具 | `--disallowedTools Edit` |
+| `--add-dir` | 添加额外工作目录 | `--add-dir ../lib` |
+| `--agent` | 指定子代理 | `--agent my-agent` |
+| `--agents` | 动态定义子代理 (JSON) | |
+| `--chrome` | 启用 Chrome 集成 | `--chrome` |
+| `--from-pr` | 从 GitHub PR 恢复会话 | `--from-pr 123` |
+| `--betas` | 启用 Beta 功能 | `--betas interleaved-thinking` |
+| `--debug` | 调试模式 | `--debug "api,mcp"` |
+| `--fallback-model` | 备用模型 | `--fallback-model haiku` |
+
+---
+
+## 权限模式
+
+Claude Code 有三种权限模式：
+
+| 模式 | 说明 | 适用场景 |
+|------|------|----------|
+| `plan` | 只读分析，不修改文件 | 代码审查、安全检查 |
+| `auto` | 自动执行，无需确认 | 快速开发 (谨慎使用) |
+| `medium` | 执行前确认 | 日常开发 (默认) |
+
+### 使用方式
+
+```powershell
+# Plan 模式 - 安全分析
+claude --permission-mode plan -p "分析认证系统的安全问题"
+
+# 交互式切换：Shift+Tab 循环切换模式
+```
+
+---
+
+## MCP 集成 (Model Context Protocol)
+
+MCP 让 Claude Code 连接外部工具和服务。
+
+### 添加 MCP Server
+
+```powershell
+# stdio 模式
+claude mcp add server-name --transport stdio -- env VAR=value -- npx -y mcp-server
+
+# HTTP 模式
+claude mcp add server-name --transport http https://mcp-server.example.com
+
+# SSE 模式
+claude mcp add server-name --transport sse https://mcp-server.example.com
+```
+
+### 列出 MCP Servers
+
+```powershell
+claude mcp list
+```
+
+### 常用 MCP Servers
+
+- **GitHub**: 代码库管理、PR、Issue
+- **Filesystem**: 文件系统操作
+- **Database**: 数据库查询
+- **Slack/Discord**: 消息通知
+- **Jira**: 任务管理
+
+---
+
+## 在 OpenClaw 中的最佳实践
+
+### 1. 简单任务用 Print 模式
+
+```powershell
+# OpenClaw 调用示例 (使用 exec + pty)
+claude -p "审查 src/auth.js 的安全性" --permission-mode plan
+```
+
+### 2. 复杂任务用交互模式
+
+```powershell
+# 需要多轮交互时
+claude "重构整个认证模块，使用 OAuth2"
+```
+
+### 3. 敏感操作用 Plan 模式
+
+```powershell
+# 代码审查、安全分析
+claude --permission-mode plan -p "分析这个 PR 的安全风险"
+```
+
+### 4. 限制资源使用
+
+```powershell
+# 限制花费
+claude -p --max-budget-usd 2.00 "修复这个 bug"
+
+# 限制轮次
+claude -p --max-turns 10 "重构这个函数"
+```
+
+### 5. 继续之前的工作
+
+```powershell
+# 继续最近会话
+claude -c
+
+# 继续指定会话
+claude -r session-name "继续完成这个任务"
+```
+
+---
+
+## 工具调用流程 (OpenClaw)
+
+1. **检查 Claude Code 是否可用**
+   ```powershell
+   claude auth status
+   ```
+
+2. **选择调用模式**
+   - 简单任务 → `--print` 模式
+   - 复杂任务 → 交互式模式 (需要 PTY)
+   - 继续工作 → `--continue` / `--resume`
+
+3. **选择权限模式**
+   - 只读分析 → `--permission-mode plan`
+   - 日常开发 → `--permission-mode medium` (默认)
+   - 自动化脚本 → `--permission-mode auto` (谨慎)
+
+4. **执行并获取结果**
+
+---
+
 ## 注意事项
 
-1. **认证**: 首次使用需 `claude auth login`
-2. **权限**: 使用 `--dangerously-skip-permissions` 跳过每次确认 (谨慎)
-3. **会话**: `-p` 是单次调用；需持续会话时使用 `claude -c` 或交互模式
-4. **目录**: 明确指定 `--dir` 确保在正确项目中操作
-5. **复杂任务**: 推荐启动交互式会话，分步骤完成
+1. **PTY 必需**: Claude Code 交互式模式需要 TTY，OpenClaw 必须使用 `pty: true`
+2. **需要登录**: Claude Code 需要 Anthropic 账户
+3. **认证**: 首次使用需 `claude auth login`
+4. **权限**: 使用 `--dangerously-skip-permissions` 跳过每次确认 (谨慎)
+5. **会话**: `-p` 是单次调用；需持续会话时使用 `claude -c` 或交互模式
+6. **目录**: 明确指定 `--dir` 确保在正确项目中操作
+7. **复杂任务**: 推荐启动交互式会话，分步骤完成
+8. **Print 模式限制**: 能力有限，复杂任务用交互式模式
+9. **资源限制**: 生产环境建议设置 `--max-budget-usd`
+10. **会话管理**: 使用 `-c` / `-r` 继续之前的工作
 
 ## 第三方模型提供商配置
 
