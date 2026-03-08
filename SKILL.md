@@ -251,6 +251,73 @@ claude --dir C:/project
 4. **目录**: 明确指定 `--dir` 确保在正确项目中操作
 5. **复杂任务**: 推荐启动交互式会话，分步骤完成
 
+## 第三方模型提供商配置
+
+Claude Code 支持配置第三方兼容的模型 API 服务商，如阿里云百炼。
+
+### 配置文件位置
+
+```
+%USERPROFILE%\.claude\settings.json
+```
+
+### 阿里云百炼配置示例
+
+```json
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "your-api-key-here",
+    "ANTHROPIC_BASE_URL": "https://coding.dashscope.aliyuncs.com/apps/anthropic",
+    "API_TIMEOUT_MS": "3000000"
+  }
+}
+```
+
+### 配置说明
+
+| 环境变量 | 说明 | 示例值 |
+|----------|------|--------|
+| `ANTHROPIC_AUTH_TOKEN` | API Key (百炼控制台获取) | `sk-sp-xxxxxx` |
+| `ANTHROPIC_BASE_URL` | API 端点地址 | `https://coding.dashscope.aliyuncs.com/apps/anthropic` |
+| `API_TIMEOUT_MS` | 请求超时时间 (毫秒) | `3000000` |
+
+### 注意事项
+
+1. **Base URL 格式**: 结尾**不要**包含 `/v1`，Claude Code 会自动添加
+   - ❌ 错误: `https://xxx.com/apps/anthropic/v1`
+   - ✅ 正确: `https://xxx.com/apps/anthropic`
+
+2. **API Key 获取**: 登录阿里云百炼控制台 → 模型服务 → API-KEY
+
+3. **可用模型**: 通过 `--model` 参数指定，如 `MiniMax-M2.5`
+
+### 测试配置
+
+```powershell
+# 使用 PowerShell 测试 API
+$body = @{
+    model = "MiniMax-M2.5"
+    max_tokens = 20
+    messages = @(
+        @{role = "user"; content = "hi"}
+    )
+} | ConvertTo-Json -Depth 3
+
+Invoke-RestMethod -Uri "https://coding.dashscope.aliyuncs.com/apps/anthropic/v1/messages" `
+    -Method Post `
+    -Headers @{
+        "Authorization" = "Bearer YOUR_API_KEY"
+        "Content-Type" = "application/json"
+    } `
+    -Body $body
+```
+
+### 指定模型运行
+
+```bash
+claude -p "你的任务" --model MiniMax-M2.5
+```
+
 ## 故障排除
 
 ```bash
