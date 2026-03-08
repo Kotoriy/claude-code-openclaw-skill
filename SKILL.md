@@ -500,6 +500,88 @@ Invoke-RestMethod -Uri "https://coding.dashscope.aliyuncs.com/apps/anthropic/v1/
 claude -p "你的任务" --model MiniMax-M2.5
 ```
 
+## Spec-Kit 集成 (规范化开发流程)
+
+Spec-Kit 是一套规范化的开发流程命令，用于将需求完整转换为可交付代码。
+
+### 指挥命令序列
+
+| 步骤 | 命令 | 产出 |
+|------|------|------|
+| **1** | `/speckit.specify [需求描述]` | spec.md（用户故事、验收标准） |
+| **2** | `/speckit.plan [分支名]` | plan.md、data-model.md |
+| **3** | `/speckit.tasks [分支名]` | tasks.md（任务清单） |
+| **4** | `/speckit.implement [分支名]` | 源代码实现 |
+| **5** | `/speckit.checklist [分支名] [清单名]` | 验收检查 |
+| **6** | `/speckit.analyze [分支名]` | 一致性分析 |
+
+### 指挥话术示例
+
+```bash
+# 1. 规格定义 - 输入完整需求描述
+/speckit.specify 创建拟物化风格的Todo List应用，使用皮革笔记本、纸质便签、金属订书钉效果...
+
+# 2. 实施计划 - 指定分支名
+/speckit.plan 001-skeletal-todo
+
+# 3. 任务分解 - 指定分支名
+/speckit.tasks 001-skeletal-todo
+
+# 4. 执行实现 - Claude Code 按任务清单开发
+/speckit.implement 001-skeletal-todo
+
+# 5. 检查验收 - 验证需求完成度
+/speckit.checklist 001-skeletal-todo requirements
+
+# 6. 一致性分析 - 确保设计与实现一致
+/speckit.analyze 001-skeletal-todo
+```
+
+### Spec-Kit 产出文档结构
+
+```
+项目目录/
+├── .claude/commands/
+│   └── speckit.*.md          # 9个 spec-kit 命令定义
+├── .specify/
+│   ├── memory/
+│   │   ├── spec.md           # 功能规格说明
+│   │   ├── plan.md           # 实现计划
+│   │   ├── tasks.md          # 任务清单
+│   │   └── constitution.md   # 项目宪法
+│   ├── scripts/powershell/   # 自动化脚本
+│   └── templates/            # 文档模板
+└── specs/
+    └── [分支名]/
+        ├── spec.md           # 完整特性规格
+        ├── plan.md           # 实施计划
+        ├── data-model.md     # 数据模型
+        ├── research.md       # 技术调研
+        ├── quickstart.md     # 快速开始
+        ├── checklists/        # 验收清单
+        └── contracts/        # 契约文档
+```
+
+### 闭环验证要点
+
+| 闭环要素 | 验证方式 |
+|---------|----------|
+| 需求 → 规格 | spec.md 包含用户故事和验收标准 |
+| 规格 → 计划 | plan.md 包含技术栈和实现阶段 |
+| 计划 → 任务 | tasks.md 每个任务有明确 ID 和文件路径 |
+| 任务 → 代码 | 源代码文件存在且功能完整 |
+| 代码 → 验收 | checklist 验证通过 |
+| 验收 → 闭环 | Success Criteria 全部满足 |
+
+### 协作规则（适用于 OpenClaw）
+
+1. **只记录，不写代码**: 不直接编写代码，只记录 Claude Code 工作过程
+2. **任务汇报**: 每次任务完成后必须汇报执行结果
+3. **超时处理**: 用户 10 分钟没回答 → 按方案处理（不破坏外部环境）
+4. **项目目录**: 新项目建在 `F:\ai-workspace`
+
+---
+
 ## 故障排除
 
 ```bash
