@@ -678,3 +678,92 @@ claude --debug
 # 查看可用子代理
 claude agents
 ```
+
+---
+
+## 常见问题及解决方案
+
+### 问题 1：无法写入文件
+
+**现象**：Claude Code 提示 "需要您的授权。请批准写入...的请求"
+
+**原因**：print 模式默认需要权限确认
+
+**解决方案**：使用 `--permission-mode auto` 参数
+
+```bash
+# 正确调用方式
+npx --yes @anthropic-ai/claude-code -p "任务描述" --model MiniMax-M2.5 --permission-mode auto
+
+# 或者
+claude -p "任务描述" --permission-mode auto
+```
+
+### 问题 2：npx 命令找不到
+
+**现象**：exec 报错 "npx: command not found"
+
+**原因**：PATH 环境变量问题，npx 不在默认 PATH 中
+
+**解决方案**：
+- 方式1：使用完整路径 `/root/.nvm/versions/node/v22.22.0/bin/npx`
+- 方式2：设置 `export PATH="/root/.nvm/versions/node/v22.22.0/bin:$PATH"`
+
+### 问题 3：Git 操作失败
+
+**现象**：git clone/pull/push 失败
+
+**解决方案**：使用 `gh` 命令代替 git CLI
+
+```bash
+# 使用 gh 同步仓库
+gh repo sync <owner>/<repo>
+
+# 使用 gh 创建 PR
+gh pr create --title "标题" --body "内容"
+
+# 使用 gh 查看状态
+gh repo status
+```
+
+### 问题 4：网络超时
+
+**现象**：API 调用超时
+
+**解决方案**：配置超时时间或使用代理
+
+```bash
+# 方式1：设置环境变量
+export API_TIMEOUT_MS=3000000
+
+# 方式2：使用 --max-turns 限制轮次
+claude -p "任务" --max-turns 10
+```
+
+---
+
+## OpenClaw 集成最佳实践
+
+### 完整调用示例
+
+```bash
+# 1. 设置环境变量
+export PATH="/root/.nvm/versions/node/v22.22.0/bin:$PATH"
+
+# 2. 进入工作目录
+cd /root/.openclaw/workspace
+
+# 3. 执行任务（推荐方式）
+npx --yes @anthropic-ai/claude-code -p "你的任务描述" \
+    --model MiniMax-M2.5 \
+    --max-turns 10 \
+    --permission-mode auto
+```
+
+### 权限模式选择
+
+| 场景 | 推荐模式 |
+|------|----------|
+| 只读分析、代码审查 | `--permission-mode plan` |
+| 日常开发、需要确认 | 默认 (medium) |
+| 自动化脚本、批量任务 | `--permission-mode auto` |
